@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         Scribd Downloader
 // @namespace    https://github.com/ThanhNguyxn/scribd-downloader
-// @version      1.0.0
+// @version      1.1.0
 // @description  📚 Download documents from Scribd for free as PDF
 // @author       ThanhNguyxn
 // @match        https://www.scribd.com/document/*
 // @match        https://www.scribd.com/doc/*
 // @match        https://www.scribd.com/embeds/*/content
+// @match        https://www.scribd.com/read/*
 // @icon         https://www.scribd.com/favicon.ico
 // @grant        GM_addStyle
 // @grant        GM_openInTab
@@ -153,6 +154,11 @@
             color: #333;
         }
 
+        .modal-content .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
         .modal-content button:hover {
             transform: scale(1.05);
         }
@@ -173,14 +179,30 @@
             transition: width 0.3s ease;
             border-radius: 10px;
         }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .info-box code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     `);
 
     // ==================== UTILITIES ====================
 
     function getDocumentId() {
         const url = window.location.href;
-        // Match: /document/123456/ or /doc/123456/ or /embeds/123456/
-        const match = url.match(/(?:document|doc|embeds)\/(\d+)/);
+        // Match: /document/123456/ or /doc/123456/ or /embeds/123456/ or /read/123456/
+        const match = url.match(/(?:document|doc|embeds|read)\/(\d+)/);
         return match ? match[1] : null;
     }
 
@@ -219,6 +241,32 @@
         const pages = document.querySelectorAll("[class*='page']");
         const totalPages = pages.length;
 
+        if (totalPages === 0) {
+            // Try alternative selectors
+            const altPages = document.querySelectorAll('.text_layer, .page_container, [data-page]');
+            if (altPages.length > 0) {
+                for (let i = 0; i < altPages.length; i++) {
+                    altPages[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    await sleep(400);
+                    if (progressCallback) {
+                        progressCallback(Math.round(((i + 1) / altPages.length) * 50));
+                    }
+                }
+                return;
+            }
+            // Fallback: scroll the whole page
+            const scrollHeight = document.documentElement.scrollHeight;
+            const steps = 20;
+            for (let i = 0; i <= steps; i++) {
+                window.scrollTo(0, (scrollHeight / steps) * i);
+                await sleep(300);
+                if (progressCallback) {
+                    progressCallback(Math.round((i / steps) * 50));
+                }
+            }
+            return;
+        }
+
         for (let i = 0; i < pages.length; i++) {
             pages[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
             await sleep(400);
@@ -237,17 +285,24 @@
             '[class*="blur"]',
             '[class*="paywall"]',
             '[class*="overlay"]',
+            '[class*="upsell"]',
+            '[class*="signup"]',
+            '[class*="login"]',
             '.auto_mobile_first',
-            '.mobile_banner'
+            '.mobile_banner',
+            '.ReactModalPortal',
+            '[data-e2e="document-upsell"]'
         ];
 
         let removed = 0;
         selectorsToRemove.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                el.remove();
-                removed++;
-            });
+            try {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    el.remove();
+                    removed++;
+                });
+            } catch (e) {}
         });
 
         // Clean document_scroller class
@@ -262,10 +317,15 @@
     function cleanupForPrint() {
         // Remove blur effects
         document.querySelectorAll('*').forEach(el => {
-            const style = window.getComputedStyle(el);
-            if (style.filter && style.filter.includes('blur')) {
-                el.style.filter = 'none';
-            }
+            try {
+                const style = window.getComputedStyle(el);
+                if (style.filter && style.filter.includes('blur')) {
+                    el.style.filter = 'none';
+                }
+                if (style.opacity && parseFloat(style.opacity) < 1) {
+                    el.style.opacity = '1';
+                }
+            } catch (e) {}
         });
 
         // Make all pages visible
@@ -296,9 +356,10 @@
             <div class="modal-content">
                 <h2>📚 Scribd Downloader</h2>
                 <p id="modal-message">Preparing document...</p>
-                <div class="progress-bar">
+                <div class="progress-bar" id="progress-container">
                     <div class="progress" id="download-progress"></div>
                 </div>
+                <div id="modal-info"></div>
                 <div class="btn-group" id="modal-buttons" style="display: none;">
                     <button class="btn-primary" id="btn-print">🖨️ Print/Save PDF</button>
                     <button class="btn-secondary" id="btn-close">Close</button>
@@ -319,7 +380,7 @@
         return modal;
     }
 
-    function showModal(message, showButtons = false, progress = 0) {
+    function showModal(message, showButtons = false, progress = 0, info = '') {
         let modal = document.getElementById('scribd-dl-modal');
         if (!modal) {
             modal = createModal();
@@ -328,6 +389,25 @@
         document.getElementById('modal-message').textContent = message;
         document.getElementById('download-progress').style.width = progress + '%';
         document.getElementById('modal-buttons').style.display = showButtons ? 'flex' : 'none';
+        document.getElementById('modal-info').innerHTML = info;
+        document.getElementById('progress-container').style.display = progress >= 0 ? 'block' : 'none';
+        modal.classList.add('show');
+    }
+
+    function showInfoModal(title, message, buttons = []) {
+        let modal = document.getElementById('scribd-dl-modal');
+        if (!modal) {
+            modal = createModal();
+        }
+
+        const content = modal.querySelector('.modal-content');
+        content.innerHTML = `
+            <h2>${title}</h2>
+            <div style="text-align: left; color: #666; line-height: 1.8;">${message}</div>
+            <div class="btn-group" style="margin-top: 20px;">
+                ${buttons.map(b => `<button class="${b.class || 'btn-secondary'}" onclick="${b.onclick}">${b.text}</button>`).join('')}
+            </div>
+        `;
         modal.classList.add('show');
     }
 
@@ -350,10 +430,29 @@
         }
 
         if (!isEmbedPage()) {
-            // Redirect to embed page
-            showStatus('🔄 Redirecting to embed page...', 0);
+            // Show info and redirect to embed page
             const embedUrl = getEmbedUrl(docId);
-            window.location.href = embedUrl;
+            
+            showInfoModal(
+                '📚 Scribd Downloader',
+                `
+                <div class="info-box">
+                    <strong>ℹ️ How it works:</strong><br><br>
+                    1. Click <strong>"Open Embed Page"</strong> below<br>
+                    2. A new page will open with the document<br>
+                    3. Click <strong>"Download PDF"</strong> button again<br>
+                    4. Wait for all pages to load<br>
+                    5. Save as PDF!
+                </div>
+                <p style="margin-top: 15px; font-size: 13px; color: #888;">
+                    💡 The embed page doesn't require login and shows the full document.
+                </p>
+                `,
+                [
+                    { text: '🚀 Open Embed Page', class: 'btn-primary', onclick: `window.open('${embedUrl}', '_blank')` },
+                    { text: 'Close', class: 'btn-secondary', onclick: `document.getElementById('scribd-dl-modal').classList.remove('show')` }
+                ]
+            );
             return;
         }
 
