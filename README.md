@@ -9,6 +9,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/ThanhNguyxn/scribd-downloader?style=for-the-badge&logo=github&color=yellow)](https://github.com/ThanhNguyxn/scribd-downloader/stargazers)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-Ready-00485B?style=for-the-badge&logo=tampermonkey&logoColor=white)](https://www.tampermonkey.net/)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/thanhnguyxn)
 
 <br/>
 
@@ -18,81 +19,75 @@
 
 ---
 
-**✨ One-click download • 🎯 Auto-scroll all pages • 🧹 Clean PDF output**
+**✨ Fully automated • 🎯 One-click download • 🧹 Clean PDF output**
 
 </div>
 
 <br/>
 
-## 🎬 Quick Start
+---
 
-### 1️⃣ Install Tampermonkey
+## 🎯 Two Methods
 
-| Browser | Link |
-|:-------:|:----:|
+| Method | Best For | Difficulty |
+|:-------|:---------|:-----------|
+| 🌐 **Tampermonkey** | Quick & easy browser use | ⭐ Easy |
+| 🐍 **Python Script** | Developers, automation | ⭐⭐ Medium |
+
+---
+
+<br/>
+
+## 🌐 Method 1: Tampermonkey (Recommended)
+
+### Step 1: Install Tampermonkey Extension
+
+| Browser | Install Link |
+|:-------:|:------------:|
 | <img src="https://img.shields.io/badge/Chrome-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white"/> | [Install](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) |
 | <img src="https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=firefox&logoColor=white"/> | [Install](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/) |
 | <img src="https://img.shields.io/badge/Edge-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white"/> | [Install](https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd) |
 
-### 2️⃣ Install Script
+### Step 2: Install the Script
 
-Click 👉 [**`userscript.js`**](userscript.js) → Tampermonkey will prompt → Click **Install**
+1. Click 👉 [**`userscript.js`**](https://raw.githubusercontent.com/ThanhNguyxn/scribd-downloader/main/userscript.js)
+2. Tampermonkey will prompt → Click **Install**
 
-### 3️⃣ Download!
+### Step 3: Use It!
 
-1. 🌐 Open any Scribd document
-2. 📥 Click the **Download PDF** button (bottom-right)
-3. ⏳ Wait for all pages to load
-4. 🖨️ Save as PDF in print dialog
+1. 🌐 Go to any **Scribd document** page
+2. 📥 Click the purple **"Download PDF"** button (top-right corner)
+3. 🚀 A new tab will open automatically
+4. ⬇️ Click the green **"Download PDF"** button on that page
+5. ⏳ Wait for all pages to load
+6. 🖨️ In print dialog → **Save as PDF**
 
-<br/>
-
-## 🖨️ Print Settings
-
-> 💡 For best results, use these settings:
-
-| Setting | Value |
-|:--------|:------|
-| Destination | `Save as PDF` |
-| Margins | `None` |
-| Background graphics | `✅ On` |
+> 💡 **Tip:** If it redirects to login, click **"Manual (Incognito)"** and follow the instructions!
 
 <br/>
 
-## 📂 Files
+---
 
-```
-📦 scribd-downloader
- ┣ 📜 userscript.js               ← Install this!
- ┣ 🐍 scribd-downloader.py        ← Python alternative
- ┗ 📋 requirements.txt
-```
+## 🐍 Method 2: Python Script
 
-<br/>
-
-## 🐍 Python Alternative
-
-> For developers who prefer Python or need more control
+> For developers who prefer command line or need automation
 
 ### Requirements
 
-| Package | Install |
-|:--------|:--------|
-| ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white) | [Download](https://www.python.org/downloads/) |
-| ![Chrome](https://img.shields.io/badge/Chrome-Browser-4285F4?style=flat-square&logo=googlechrome&logoColor=white) | [Download](https://www.google.com/chrome/) |
-| ![Selenium](https://img.shields.io/badge/Selenium-43B02A?style=flat-square&logo=selenium&logoColor=white) | `pip install selenium` |
+- ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white) [Download Python](https://www.python.org/downloads/)
+- ![Chrome](https://img.shields.io/badge/Chrome-Browser-4285F4?style=flat-square&logo=googlechrome&logoColor=white) [Download Chrome](https://www.google.com/chrome/)
 
-### Quick Start
+### Installation
 
 ```bash
-# Clone
+# Clone the repository
 git clone https://github.com/ThanhNguyxn/scribd-downloader.git
 cd scribd-downloader
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run
+# Run the script
 python scribd-downloader.py
 ```
 
@@ -102,14 +97,43 @@ python scribd-downloader.py
 Input link Scribd: https://www.scribd.com/document/123456789/Document-Name
 ```
 
-The script will:
+The script will automatically:
 1. 🔗 Convert URL to embed format
-2. 🌐 Open Chrome with DevTools
-3. 📜 Auto-scroll all pages
-4. 🧹 Remove toolbars
-5. 🖨️ Open print dialog
+2. 🌐 Open Chrome browser
+3. 📜 Scroll through all pages
+4. 🧹 Remove toolbars & overlays
+5. 🖨️ Open print dialog → Save as PDF
 
 <br/>
+
+---
+
+## 🖨️ Print Settings (Important!)
+
+> For best PDF quality, use these settings:
+
+| Setting | Value |
+|:--------|:------|
+| **Destination** | `Save as PDF` |
+| **Margins** | `None` |
+| **Background graphics** | `✅ Enabled` |
+
+<br/>
+
+---
+
+## 📂 Project Files
+
+```
+📦 scribd-downloader
+ ┣ 📜 userscript.js          ← Tampermonkey script
+ ┣ 🐍 scribd-downloader.py   ← Python script
+ ┗ 📋 requirements.txt       ← Python dependencies
+```
+
+<br/>
+
+---
 
 ## ⚠️ Disclaimer
 
@@ -128,5 +152,6 @@ The script will:
 
 [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/ThanhNguyxn)
 [![GitHub](https://img.shields.io/badge/ThanhNguyxn-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ThanhNguyxn)
+[![Buy Me a Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/thanhnguyxn)
 
 </div>
