@@ -8,7 +8,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/ThanhNguyxn/scribd-downloader?style=for-the-badge&logo=github&color=yellow)](https://github.com/ThanhNguyxn/scribd-downloader/stargazers)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
-[![Tampermonkey](https://img.shields.io/badge/Tampermonkey-Ready-00485B?style=for-the-badge&logo=tampermonkey&logoColor=white)](https://www.tampermonkey.net/)
+[![Greasy Fork](https://img.shields.io/badge/Greasy%20Fork-Install-670000?style=for-the-badge&logo=greasyfork&logoColor=white)](https://greasyfork.org/en/scripts/557768-scribd-downloader)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/thanhnguyxn)
 
 <br/>
@@ -50,8 +50,9 @@
 
 ### Step 2: Install the Script
 
-1. Click 👉 [**`userscript.js`**](https://raw.githubusercontent.com/ThanhNguyxn/scribd-downloader/main/userscript.js)
-2. Tampermonkey will prompt → Click **Install**
+[![Install Script](https://img.shields.io/badge/Install%20Script-Greasy%20Fork-670000?style=for-the-badge&logo=greasyfork&logoColor=white)](https://greasyfork.org/en/scripts/557768-scribd-downloader)
+
+Or manually: [**`userscript.js`**](https://raw.githubusercontent.com/ThanhNguyxn/scribd-downloader/main/userscript.js)
 
 ### Step 3: Use It!
 
