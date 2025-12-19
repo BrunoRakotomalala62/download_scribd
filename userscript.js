@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribd Downloader
 // @namespace    https://github.com/ThanhNguyxn/scribd-downloader
-// @version      2.2.4
+// @version      2.2.5
 // @description  📚 Download documents from Scribd for free as PDF - Fully automated!
 // @author       ThanhNguyxn
 // @match        https://www.scribd.com/*
@@ -776,82 +776,22 @@
                 page.style.breakInside = 'avoid';
             });
 
-            // Add print-specific styles
+            // Add print-specific styles - SIMPLE like Python (only hide toolbars)
             const printStyles = document.createElement('style');
             printStyles.id = 'sd-print-styles';
             printStyles.textContent = `
                 @media print {
-                    /* Reset everything for clean print */
-                    * {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        box-sizing: border-box !important;
-                    }
-                    
-                    html, body {
-                        width: 100% !important;
-                        height: auto !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        overflow: visible !important;
-                        background: white !important;
-                    }
-                    
-                    /* Remove all scrollers and containers */
-                    .document_scroller, [class*="scroller"], [class*="container"] {
-                        overflow: visible !important;
-                        height: auto !important;
-                        max-height: none !important;
-                        width: 100% !important;
-                        position: static !important;
-                        transform: none !important;
-                    }
-                    
-                    /* Make pages full-page */
-                    [class*="page"] {
-                        page-break-after: always !important;
-                        page-break-inside: avoid !important;
-                        break-after: page !important;
-                        break-inside: avoid !important;
-                        display: block !important;
-                        visibility: visible !important;
-                        opacity: 1 !important;
-                        width: 100% !important;
-                        height: auto !important;
-                        max-width: 100% !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        position: relative !important;
-                        transform: none !important;
-                    }
-                    
-                    /* Images should fill the page */
-                    [class*="page"] img {
-                        width: 100% !important;
-                        height: auto !important;
-                        max-width: 100% !important;
-                        object-fit: contain !important;
-                    }
-                    
-                    [class*="page"]:last-child {
-                        page-break-after: auto !important;
-                    }
-                    
-                    /* Hide all UI elements */
-                    .toolbar_top, .toolbar_bottom, [class*="toolbar"],
-                    #sd-download-btn, #sd-progress-popup, #sd-floating-btn,
-                    [class*="header"], [class*="footer"], [class*="nav"],
-                    [class*="sidebar"], [class*="menu"], [class*="button"],
-                    [class*="overlay"], [class*="modal"], [class*="popup"],
-                    [class*="banner"], [class*="ad"], [class*="promo"] {
+                    /* Only hide toolbars and buttons - don't touch content! */
+                    .toolbar_top, .toolbar_bottom {
                         display: none !important;
-                        visibility: hidden !important;
+                    }
+                    #sd-download-btn, #sd-progress-popup, #sd-floating-btn {
+                        display: none !important;
                     }
                     
                     /* Page settings */
                     @page {
-                        margin: 0 !important;
-                        size: auto !important;
+                        margin: 0;
                     }
                 }
             `;
