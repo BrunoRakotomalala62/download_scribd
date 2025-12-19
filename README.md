@@ -9,6 +9,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/ThanhNguyxn/scribd-downloader?style=for-the-badge&logo=github&color=yellow)](https://github.com/ThanhNguyxn/scribd-downloader/stargazers)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Greasy Fork](https://img.shields.io/badge/Greasy%20Fork-Install-670000?style=for-the-badge&logo=greasyfork&logoColor=white)](https://greasyfork.org/en/scripts/557768-scribd-downloader)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/ThanhNguyxn)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/thanhnguyxn)
 
 <br/>
@@ -33,6 +34,95 @@
 |:-------|:---------|:-----------|
 | 🌐 **Tampermonkey** | Quick & easy browser use | ⭐ Easy |
 | 🐍 **Python Script** | Developers, automation | ⭐⭐ Medium |
+
+---
+
+<br/>
+
+## 🔧 How It Works
+
+> Understanding the technical mechanism behind this tool
+
+### 🎯 Core Concept
+
+Scribd uses an **embed URL format** (`/embeds/{document_id}/content`) that renders the full document content **without requiring authentication**. This tool leverages this behavior to extract and save documents.
+
+> [!IMPORTANT]
+> **Tab Behavior:** When you click "Download PDF", a new tab opens with the embed page. The original Scribd page **stays open** in the background — you won't lose your place!
+
+> [!WARNING]
+> **Browser Popup Blocker:** If the new tab doesn't open, your browser may be blocking popups. Allow popups for `scribd.com` or use the "Manual (Incognito)" option instead.
+
+> [!NOTE]
+> **Why Incognito?** If you're logged into Scribd, the embed page might redirect to login. Using Incognito mode bypasses this since there's no active session.
+
+### 📊 Technical Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 1: URL TRANSFORMATION                                            │
+│  ─────────────────────────────                                          │
+│                                                                         │
+│  Original:  https://www.scribd.com/document/123456/document-title       │
+│                              ↓                                          │
+│  Embed:     https://www.scribd.com/embeds/123456/content                │
+│                                                                         │
+│  ✨ The embed URL displays full content without login restrictions      │
+└─────────────────────────────────────────────────────────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 2: CONTENT LOADING                                                │
+│  ───────────────────────────                                            │
+│                                                                         │
+│  • Scribd uses lazy-loading (pages load only when scrolled into view)  │
+│  • Script automatically scrolls through ALL pages                       │
+│  • Each page element with class="page" is scrolled into viewport       │
+│  • Small delay (500ms) ensures content fully renders                    │
+│                                                                         │
+│  📜 Result: All document pages are now loaded in the DOM                │
+└─────────────────────────────────────────────────────────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 3: UI CLEANUP                                                     │
+│  ──────────────────                                                     │
+│                                                                         │
+│  Removes unnecessary elements for clean PDF output:                     │
+│                                                                         │
+│  ❌ .toolbar_top      →  Top navigation bar                            │
+│  ❌ .toolbar_bottom   →  Bottom action bar                             │
+│  ❌ .document_scroller →  Scroll container (reset for proper layout)   │
+│                                                                         │
+│  🧹 Result: Clean document ready for printing                           │
+└─────────────────────────────────────────────────────────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 4: PDF GENERATION                                                 │
+│  ─────────────────────                                                  │
+│                                                                         │
+│  • Triggers browser's native print dialog (window.print())             │
+│  • User selects "Save as PDF" as destination                           │
+│  • Browser renders all loaded pages into a single PDF file             │
+│                                                                         │
+│  📄 Result: Complete document saved as PDF                              │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 🔍 Code Breakdown
+
+| Component | Function |
+|:----------|:---------|
+| `convert_scribd_link()` | Extracts document ID and builds embed URL |
+| `scrollIntoView()` | Forces each page to load by scrolling |
+| `removeChild()` | Cleans up toolbar elements |
+| `window.print()` | Triggers native browser print/save dialog |
+
+### ⚡ Why This Works
+
+1. **Embed endpoint** — Scribd's embed feature is designed for third-party websites to display documents, so it doesn't enforce the same restrictions as the main viewer
+2. **Lazy loading bypass** — By scrolling through all pages, we force the browser to fetch and render every page
+3. **Native print** — Using the browser's built-in print function ensures high-quality PDF output with proper formatting
+
+<br/>
 
 ---
 
@@ -153,6 +243,7 @@ The script will automatically:
 
 [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/ThanhNguyxn)
 [![GitHub](https://img.shields.io/badge/ThanhNguyxn-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ThanhNguyxn)
+[![GitHub Sponsors](https://img.shields.io/badge/💖%20Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/ThanhNguyxn)
 [![Buy Me a Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/thanhnguyxn)
 
 </div>

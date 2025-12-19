@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribd Downloader
 // @namespace    https://github.com/ThanhNguyxn/scribd-downloader
-// @version      2.1.0
+// @version      2.2.0
 // @description  📚 Download documents from Scribd for free as PDF - Fully automated!
 // @author       ThanhNguyxn
 // @match        https://www.scribd.com/*
@@ -17,12 +17,13 @@
 // @updateURL    https://raw.githubusercontent.com/ThanhNguyxn/scribd-downloader/main/userscript.js
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     // ==================== CONFIG ====================
     const BUTTON_DELAY = 1500;
     const GITHUB_URL = 'https://github.com/ThanhNguyxn/scribd-downloader';
+    const SPONSOR_URL = 'https://github.com/sponsors/ThanhNguyxn';
     const DONATE_URL = 'https://buymeacoffee.com/thanhnguyxn';
 
     // ==================== STYLES ====================
@@ -326,12 +327,12 @@
                 GM_setClipboard(text, 'text');
                 return true;
             }
-        } catch(e) {}
-        
+        } catch (e) { }
+
         try {
             navigator.clipboard.writeText(text);
             return true;
-        } catch(e) {}
+        } catch (e) { }
 
         try {
             const ta = document.createElement('textarea');
@@ -342,7 +343,7 @@
             document.execCommand('copy');
             ta.remove();
             return true;
-        } catch(e) {}
+        } catch (e) { }
 
         return false;
     }
@@ -355,7 +356,7 @@
 
     function showMainButton() {
         if (document.getElementById('sd-floating-btn')) return;
-        
+
         const docId = getDocId();
         if (!docId) return;
 
@@ -369,14 +370,14 @@
     async function startAutoDownload() {
         const btn = document.getElementById('sd-floating-btn');
         const docId = getDocId();
-        
+
         if (!docId) {
             alert('Cannot find document ID!');
             return;
         }
 
         const embedUrl = getEmbedUrl(docId);
-        
+
         // Change button to loading state
         btn.classList.add('loading');
         btn.innerHTML = '⏳ Opening...';
@@ -416,6 +417,9 @@
                     <a href="${GITHUB_URL}" target="_blank" class="sd-link">
                         ⭐ GitHub
                     </a>
+                    <a href="${SPONSOR_URL}" target="_blank" class="sd-link">
+                        💖 Sponsor
+                    </a>
                     <a href="${DONATE_URL}" target="_blank" class="sd-link">
                         ☕ Buy me a coffee
                     </a>
@@ -424,7 +428,7 @@
         `;
 
         document.body.appendChild(popup);
-        
+
         requestAnimationFrame(() => {
             popup.classList.add('show');
         });
@@ -435,24 +439,24 @@
         }, 1500);
 
         // Event handlers
-        document.getElementById('sd-open-now').onclick = function() {
+        document.getElementById('sd-open-now').onclick = function () {
             clearTimeout(autoTimer);
             openEmbedPage(embedUrl);
         };
 
-        document.getElementById('sd-open-incognito').onclick = function() {
+        document.getElementById('sd-open-incognito').onclick = function () {
             clearTimeout(autoTimer);
             copyText(embedUrl);
             this.innerHTML = '✅ URL Copied!';
             showManualInstructions();
         };
 
-        document.getElementById('sd-close-btn').onclick = function() {
+        document.getElementById('sd-close-btn').onclick = function () {
             clearTimeout(autoTimer);
             closePopup();
         };
 
-        popup.onclick = function(e) {
+        popup.onclick = function (e) {
             if (e.target === popup) {
                 clearTimeout(autoTimer);
                 closePopup();
@@ -461,13 +465,18 @@
     }
 
     function openEmbedPage(url) {
-        // Open in new tab
+        // Open in new tab but keep current tab focused (active: false)
         if (typeof GM_openInTab === 'function') {
-            GM_openInTab(url, { active: true });
+            GM_openInTab(url, { active: false, insert: true, setParent: true });
         } else {
-            window.open(url, '_blank');
+            // For regular window.open, we open in background
+            const newTab = window.open(url, '_blank');
+            // Blur the new tab and focus back on current window
+            if (newTab) {
+                window.focus();
+            }
         }
-        
+
         // Update button
         const btn = document.getElementById('sd-floating-btn');
         if (btn) {
@@ -506,6 +515,7 @@
 
             <div class="sd-links">
                 <a href="${GITHUB_URL}" target="_blank" class="sd-link">⭐ GitHub</a>
+                <a href="${SPONSOR_URL}" target="_blank" class="sd-link">💖 Sponsor</a>
                 <a href="${DONATE_URL}" target="_blank" class="sd-link">☕ Buy me a coffee</a>
             </div>
         `;
@@ -516,12 +526,12 @@
     function closePopup() {
         const popup = document.getElementById('sd-popup');
         const btn = document.getElementById('sd-floating-btn');
-        
+
         if (popup) {
             popup.classList.remove('show');
             setTimeout(() => popup.remove(), 300);
         }
-        
+
         if (btn) {
             btn.classList.remove('loading');
             btn.innerHTML = '📥 Download PDF';
@@ -578,83 +588,219 @@
         const text = document.getElementById('sd-progress-text');
 
         try {
-            // Step 1: Scroll all pages
+            // ==================== STEP 1: SCROLL ALL PAGES ====================
             text.textContent = '📄 Loading all pages...';
+
+            // Find the scroll container (document_scroller)
+            const scrollContainer = document.querySelector('.document_scroller') ||
+                document.querySelector('[class*="scroller"]') ||
+                document.documentElement;
+
+            // Get all page elements
             const pages = document.querySelectorAll("[class*='page']");
-            
+            console.log(`[Scribd Downloader] Found ${pages.length} pages`);
+
             if (pages.length > 0) {
                 for (let i = 0; i < pages.length; i++) {
-                    pages[i].scrollIntoView({ behavior: 'auto', block: 'center' });
-                    await sleep(350);
-                    const pct = Math.round(((i + 1) / pages.length) * 50);
+                    // Scroll the page into view
+                    pages[i].scrollIntoView({ behavior: 'instant', block: 'start' });
+
+                    // Also try scrolling the container directly
+                    if (scrollContainer && scrollContainer !== document.documentElement) {
+                        const pageTop = pages[i].offsetTop;
+                        scrollContainer.scrollTop = pageTop;
+                    }
+
+                    // Wait for content to load (like Python's time.sleep(0.5))
+                    await sleep(500);
+
+                    const pct = Math.round(((i + 1) / pages.length) * 40);
                     fill.style.width = pct + '%';
                     text.textContent = `📄 Loading page ${i + 1}/${pages.length}...`;
                 }
             } else {
-                // Fallback scroll
-                const h = document.documentElement.scrollHeight;
-                for (let i = 0; i <= 20; i++) {
-                    window.scrollTo(0, (h / 20) * i);
-                    await sleep(150);
-                    fill.style.width = (i * 2.5) + '%';
+                // Fallback: scroll the entire document height
+                console.log('[Scribd Downloader] No pages found, using fallback scroll');
+                const h = Math.max(
+                    document.body.scrollHeight,
+                    document.documentElement.scrollHeight,
+                    scrollContainer?.scrollHeight || 0
+                );
+
+                for (let i = 0; i <= 30; i++) {
+                    const scrollPos = (h / 30) * i;
+                    window.scrollTo(0, scrollPos);
+                    if (scrollContainer && scrollContainer !== document.documentElement) {
+                        scrollContainer.scrollTop = scrollPos;
+                    }
+                    await sleep(200);
+                    fill.style.width = (i * 1.3) + '%';
                 }
             }
 
-            // Step 2: Remove junk
-            fill.style.width = '60%';
-            text.textContent = '🧹 Cleaning up...';
+            console.log('[Scribd Downloader] Finished scrolling - Last Page');
+
+            // ==================== STEP 2: DELETE TOOLBAR (like Python) ====================
+            fill.style.width = '50%';
+            text.textContent = '🧹 Removing toolbar_top...';
             await sleep(200);
 
-            const junk = [
-                '.toolbar_top', '.toolbar_bottom', '.promo_div',
-                '[class*="blur"]', '[class*="paywall"]', '[class*="overlay"]',
-                '[class*="upsell"]', '[class*="signup"]', '.ReactModalPortal',
-                '[class*="banner"]', '[class*="modal"]'
+            // Delete toolbar_top (exactly like Python script)
+            const toolbarTop = document.querySelector('.toolbar_top');
+            if (toolbarTop) {
+                toolbarTop.remove();
+                console.log("[Scribd Downloader] 'toolbar_top' was successfully deleted.");
+            } else {
+                console.log("[Scribd Downloader] 'toolbar_top' was not found.");
+            }
+
+            // Delete toolbar_bottom (exactly like Python script)
+            fill.style.width = '55%';
+            text.textContent = '🧹 Removing toolbar_bottom...';
+            const toolbarBottom = document.querySelector('.toolbar_bottom');
+            if (toolbarBottom) {
+                toolbarBottom.remove();
+                console.log("[Scribd Downloader] ✅ 'toolbar_bottom' was successfully deleted.");
+            } else {
+                console.log("[Scribd Downloader] ❌ 'toolbar_bottom' was not found.");
+            }
+
+            // ==================== STEP 3: REMOVE DOCUMENT_SCROLLER CLASS (like Python) ====================
+            fill.style.width = '60%';
+            text.textContent = '🧹 Removing scroll containers...';
+            await sleep(200);
+
+            // Remove document_scroller class to fix layout for print (exactly like Python)
+            const scrollers = document.querySelectorAll('.document_scroller');
+            scrollers.forEach(el => {
+                el.setAttribute('class', '');
+                el.style.overflow = 'visible';
+                el.style.height = 'auto';
+                el.style.maxHeight = 'none';
+            });
+            console.log('[Scribd Downloader] ------- Deleted containers ----------');
+
+            // ==================== STEP 4: REMOVE OTHER JUNK ====================
+            fill.style.width = '70%';
+            text.textContent = '🧹 Cleaning up overlays...';
+            await sleep(200);
+
+            const junkSelectors = [
+                '.promo_div',
+                '[class*="blur"]',
+                '[class*="paywall"]',
+                '[class*="overlay"]:not([class*="page"])',
+                '[class*="upsell"]',
+                '[class*="signup"]',
+                '.ReactModalPortal',
+                '[class*="banner"]',
+                '[class*="modal"]',
+                '[class*="footer"]',
+                '[class*="header"]:not([class*="page"])',
+                '[class*="sidebar"]',
+                '[class*="ad-"]',
+                '[class*="advertisement"]',
+                '[class*="promo"]'
             ];
-            junk.forEach(sel => {
+
+            junkSelectors.forEach(sel => {
                 try {
                     document.querySelectorAll(sel).forEach(el => el.remove());
-                } catch(e) {}
+                } catch (e) { }
             });
 
-            // Step 3: Fix visibility
-            fill.style.width = '80%';
-            text.textContent = '✨ Optimizing...';
+            // ==================== STEP 5: FIX VISIBILITY & LAYOUT ====================
+            fill.style.width = '85%';
+            text.textContent = '✨ Optimizing for print...';
             await sleep(200);
 
+            // Remove blur and fix opacity
             document.querySelectorAll('*').forEach(el => {
                 try {
                     const s = getComputedStyle(el);
-                    if (s.filter?.includes('blur')) el.style.filter = 'none';
-                    if (parseFloat(s.opacity) < 1) el.style.opacity = '1';
-                } catch(e) {}
+                    if (s.filter && s.filter.includes('blur')) {
+                        el.style.filter = 'none';
+                    }
+                    if (parseFloat(s.opacity) < 1) {
+                        el.style.opacity = '1';
+                    }
+                    // Fix any hidden overflow that might hide pages
+                    if (s.overflow === 'hidden' || s.overflowY === 'hidden') {
+                        el.style.overflow = 'visible';
+                    }
+                } catch (e) { }
             });
 
-            // Scroll to top
-            window.scrollTo(0, 0);
+            // Make pages display properly for print
+            document.querySelectorAll("[class*='page']").forEach(page => {
+                page.style.pageBreakAfter = 'always';
+                page.style.pageBreakInside = 'avoid';
+                page.style.breakAfter = 'page';
+                page.style.breakInside = 'avoid';
+            });
 
-            // Step 4: Print
+            // Add print-specific styles
+            const printStyles = document.createElement('style');
+            printStyles.id = 'sd-print-styles';
+            printStyles.textContent = `
+                @media print {
+                    body {
+                        overflow: visible !important;
+                        height: auto !important;
+                    }
+                    .document_scroller, [class*="scroller"] {
+                        overflow: visible !important;
+                        height: auto !important;
+                        max-height: none !important;
+                    }
+                    [class*="page"] {
+                        page-break-after: always !important;
+                        page-break-inside: avoid !important;
+                        break-after: page !important;
+                        break-inside: avoid !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                    }
+                    [class*="page"]:last-child {
+                        page-break-after: auto !important;
+                    }
+                    .toolbar_top, .toolbar_bottom, [class*="toolbar"] {
+                        display: none !important;
+                    }
+                }
+            `;
+            document.head.appendChild(printStyles);
+
+            // ==================== STEP 6: SCROLL TO TOP & PRINT ====================
+            window.scrollTo(0, 0);
+            if (scrollContainer && scrollContainer !== document.documentElement) {
+                scrollContainer.scrollTop = 0;
+            }
+
             fill.style.width = '100%';
             text.textContent = '✅ Ready! Opening print dialog...';
-            await sleep(400);
+            await sleep(500);
 
             progress.remove();
+
+            // Print (exactly like Python: window.print())
             window.print();
 
             // Reset button
             btn.classList.remove('loading');
             btn.innerHTML = '✅ Done! Print again?';
-            
+
             setTimeout(() => {
                 btn.innerHTML = '⬇️ Download PDF';
             }, 5000);
 
         } catch (err) {
-            console.error('Download error:', err);
+            console.error('[Scribd Downloader] Download error:', err);
             progress.remove();
             btn.classList.remove('loading');
             btn.innerHTML = '❌ Error - Try again';
-            
+
             setTimeout(() => {
                 btn.innerHTML = '⬇️ Download PDF';
             }, 3000);
