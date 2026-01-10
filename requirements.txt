@@ -5,3 +5,9 @@ trio~=0.17
 trio-websocket~=0.9
 typing_extensions~=4.9
 websocket-client~=1.8
+selenium
+trio
+trio-websocket
+typing_extensions
+urllib3
+websocket-client

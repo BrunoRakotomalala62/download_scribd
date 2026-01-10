@@ -1,0 +1,30 @@
+modules = ["nodejs-20", "python-3.11"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["coreutils", "geckodriver", "chromium", "chromedriver"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Scribd Downloader"
+
+[[workflows.workflow]]
+name = "Scribd Downloader"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python scribd-downloader.py"
+
+[workflows.workflow.metadata]
+outputType = "console"

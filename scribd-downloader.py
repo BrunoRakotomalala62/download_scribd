@@ -12,9 +12,14 @@ import time
 
 # Set up Google options
 options = Options()
-options.add_experimental_option("detach", True)  # Keep Chrome running
+options.add_argument("--headless=new")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--window-size=1920,1080")
+options.add_argument("--disable-gpu")
+options.add_argument("--remote-debugging-port=9222")
 # Enable Developer Tools to open automatically
-options.add_argument("-devtools")
+# options.add_argument("-devtools")
 
 
 # Convert link
