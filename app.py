@@ -77,6 +77,26 @@ def download_scribd_pdf(url):
     finally:
         driver.quit()
 
+@app.route('/download')
+def download_api():
+    url = request.args.get('scribd_url')
+    if not url:
+        return "Veuillez fournir un paramètre scribd_url", 400
+    
+    filepath = download_scribd_pdf(url)
+    if not filepath:
+        return "URL Scribd invalide", 400
+
+    @after_this_request
+    def remove_file(response):
+        try:
+            os.remove(filepath)
+        except Exception as error:
+            app.logger.error("Error removing file", error)
+        return response
+
+    return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
