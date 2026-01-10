@@ -1,3 +1,3 @@
-source ./.pythonlibs/bin/activate || true
-pip install -r requirements.txt
+#!/usr/bin/env bash
+export PATH=$PATH:$HOME/.bin
 python app.py
