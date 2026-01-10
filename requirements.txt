@@ -11,3 +11,4 @@ trio-websocket
 typing_extensions
 urllib3
 websocket-client
+flask

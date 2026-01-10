@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scribd Downloader Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --bg: #0f0c29;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-weight: 300;
+            color: #ddd;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scribd Downloader</h1>
+        <p>Entrez l'URL du document Scribd pour le télécharger directement sur votre téléphone.</p>
+        
+        <form id="downloadForm" action="/" method="POST">
+            <div class="input-group">
+                <input type="url" name="url" placeholder="https://fr.scribd.com/document/..." required>
+            </div>
+            <button type="submit" id="btnSubmit">
+                <span id="btnText">Télécharger le PDF</span>
+                <div class="loader" id="loader"></div>
+            </button>
+        </form>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('downloadForm');
+        const btn = document.getElementById('btnSubmit');
+        const btnText = document.getElementById('btnText');
+        const loader = document.getElementById('loader');
+        const status = document.getElementById('status');
+
+        form.onsubmit = async (e) => {
+            btn.disabled = true;
+            btnText.textContent = "Préparation...";
+            loader.style.display = "block";
+            status.textContent = "Le serveur prépare votre document. Cela peut prendre une minute...";
+            
+            // On laisse le formulaire se soumettre normalement pour le téléchargement direct
+            setTimeout(() => {
+                // On réinitialise l'UI après un délai car le téléchargement ne change pas de page
+                window.addEventListener('focus', () => {
+                    btn.disabled = false;
+                    btnText.textContent = "Télécharger le PDF";
+                    loader.style.display = "none";
+                    status.textContent = "";
+                }, { once: true });
+            }, 5000);
+        };
+    </script>
+</body>
+</html>
