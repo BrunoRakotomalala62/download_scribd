@@ -25,7 +25,7 @@ options.add_argument("--remote-debugging-port=9222")
 # Convert link
 def convert_scribd_link(url):
     import re
-    match = re.search(r'https://www\.scribd\.com/document/(\d+)/', url)
+    match = re.search(r'https://(?:[a-z]{2}\.)?scribd\.com/document/(\d+)/', url)
     if match:
         doc_id = match.group(1)
         return f'https://www.scribd.com/embeds/{doc_id}/content'
