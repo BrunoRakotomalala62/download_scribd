@@ -33,11 +33,17 @@ def download_scribd_pdf(url):
         driver.get(embed_url)
         time.sleep(3)
 
-        # Scroll to load all pages
+        # Scroll to load all pages faster
         page_elements = driver.find_elements(By.CSS_SELECTOR, "[class*='page']")
-        for page in page_elements:
-            driver.execute_script("arguments[0].scrollIntoView();", page)
-            time.sleep(0.3)
+        # Batch scrolling or faster scroll
+        for i in range(0, len(page_elements), 3):  # Scroll every 3 pages
+            driver.execute_script("arguments[0].scrollIntoView();", page_elements[i])
+            time.sleep(0.15)
+        
+        # Ensure last page is loaded
+        if page_elements:
+            driver.execute_script("arguments[0].scrollIntoView();", page_elements[-1])
+            time.sleep(0.2)
 
         # Cleanup UI
         driver.execute_script("""
