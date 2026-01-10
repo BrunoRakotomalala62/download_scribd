@@ -125,9 +125,32 @@ driver.execute_script("""
 print("✅ Print CSS injected (no margins)")
 
 
-# STEP 04: PRINT PDF
+import base64
+import json
+
+# STEP 04: PRINT PDF using CDP
 # Scroll back to top
 driver.execute_script("window.scrollTo(0, 0);")
 
-# Open print window
-driver.execute_script("window.print();")
+print("⏳ Génération du PDF en cours...")
+
+# Utiliser Chrome DevTools Protocol pour générer le PDF
+print_options = {
+    'landscape': False,
+    'displayHeaderFooter': False,
+    'printBackground': True,
+    'preferCSSPageSize': True,
+}
+
+result = driver.execute_cdp_cmd("Page.printToPDF", print_options)
+pdf_data = base64.b64decode(result['data'])
+
+# Sauvegarder le fichier
+filename = f"scribd_download_{int(time.time())}.pdf"
+with open(filename, 'wb') as f:
+    f.write(pdf_data)
+
+print(f"✅ PDF généré avec succès : {filename}")
+print(f"Vous pouvez maintenant télécharger le fichier '{filename}' depuis l'explorateur de fichiers à gauche.")
+
+driver.quit()
