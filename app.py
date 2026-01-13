@@ -104,7 +104,8 @@ def recherche():
         return {"error": "Veuillez fournir un paramètre scribd"}, 400
     
     # URL de recherche Scribd
-    search_url = f"https://www.scribd.com/search?query={requests.utils.quote(query)}&content_type=documents"
+    from urllib.parse import quote
+    search_url = f"https://www.scribd.com/search?query={quote(query)}&content_type=documents"
     
     options = Options()
     options.add_argument("--headless=new")
