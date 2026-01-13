@@ -115,8 +115,12 @@ def recherche():
     driver = webdriver.Chrome(options=options)
     try:
         driver.get(search_url)
-        time.sleep(3)
         
+        # Faire défiler vers le bas pour charger plus de résultats
+        for _ in range(3):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1.5)
+            
         results = []
         # On essaie des sélecteurs plus génériques
         # Scribd change souvent ses classes, on cherche par structure
@@ -127,7 +131,7 @@ def recherche():
             # Fallback sur les liens qui ressemblent à des documents
             items = driver.find_elements(By.CSS_SELECTOR, "a[href*='/document/']")
 
-        for item in items[:15]:
+        for item in items[:50]:
             try:
                 # Si l'item est déjà le lien
                 if item.tag_name == 'a':
