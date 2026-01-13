@@ -115,16 +115,22 @@ def recherche():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     
+    # On désactive les images pour accélérer le chargement
+    options.add_argument("--blink-settings=imagesEnabled=false")
+    
     driver = webdriver.Chrome(options=options)
     try:
         driver.get(search_url)
         
-        # Déterminer combien de défilement faire en fonction de la page demandée
-        # Pour 25 résultats par page, on a besoin de plus de contenu
-        scroll_count = 2 + (page * 2) 
-        for _ in range(scroll_count):
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(1)
+        # On réduit le scroll au strict nécessaire pour la page demandée
+        # Scribd charge souvent pas mal de résultats par scroll
+        if page > 1:
+            scroll_count = min(page, 4) # On limite à 4 scrolls max
+            for _ in range(scroll_count):
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(0.8) # Temps d'attente réduit
+        else:
+            time.sleep(1.5) # Juste un petit temps pour la page 1
             
         results = []
         items = driver.find_elements(By.CSS_SELECTOR, "div[data-resource_id], .document_card, .doc_card")
