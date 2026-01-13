@@ -168,8 +168,7 @@ def recherche():
                     if not any(r['url'] == link for r in results):
                         results.append({
                             "titre": title.strip(),
-                            "url": link,
-                            "image": image_url
+                            "url": link
                         })
             except:
                 continue
