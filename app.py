@@ -146,14 +146,17 @@ def recherche():
         paginated_results = results[start_idx:end_idx]
         
         # Formater les résultats avec numérotation
-        formatted_results = {}
+        from collections import OrderedDict
+        formatted_results = OrderedDict()
         for i, res in enumerate(paginated_results, 1):
             num = start_idx + i
             formatted_results[str(num)] = res["titre"]
             # Mettre en cache l'URL pour le téléchargement par numéro
             search_cache[str(num)] = res["url"]
                 
-        return formatted_results
+        # Utiliser Flask.json.response pour garder l'ordre des clés
+        from flask import jsonify
+        return jsonify(formatted_results)
     finally:
         driver.quit()
 
