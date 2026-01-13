@@ -217,30 +217,29 @@ import pytz
 def auto_ping():
     """
     Fonction pour auto-ping l'application afin de la maintenir éveillée sur Render.
-    Respecte les plages horaires demandées (06h-00h).
+    Respecte les limites de Render (750h/mois).
     """
     def ping():
         while True:
             try:
-                # On utilise l'heure de Madagascar/Paris ou UTC selon besoin, ici UTC+3 (proche Madagascar/France été)
-                # On peut aussi laisser l'utilisateur configurer sa timezone. Par défaut UTC.
+                # On utilise l'heure de Madagascar/Paris
                 now = datetime.now(pytz.timezone('Indian/Antananarivo'))
                 hour = now.hour
                 
-                # De 06h00 à 00h00 : Mode éveil (ping toutes les 10 minutes)
-                if 6 <= hour < 24:
-                    app_url = os.environ.get('RENDER_EXTERNAL_URL')
-                    if app_url:
-                        requests.get(app_url)
-                        print(f"[{now}] Auto-ping envoyé à {app_url}")
+                # Render Free Tier offre 750h/mois, ce qui couvre 24/24 pour un mois de 31 jours (744h).
+                # Cependant, pour être sûr et dynamique, on peut limiter les pings.
+                # Ping toutes les 14 minutes comme demandé
                 
-                # De 00h00 à 06h00 : On laisse dormir (pas de ping)
+                app_url = os.environ.get('RENDER_EXTERNAL_URL')
+                if app_url:
+                    requests.get(app_url)
+                    print(f"[{now}] Auto-ping envoyé à {app_url}")
                 
             except Exception as e:
                 print(f"Erreur auto-ping: {e}")
             
-            # Attendre 10 minutes (600 secondes)
-            time.sleep(600)
+            # Attendre 14 minutes (840 secondes)
+            time.sleep(840)
 
     # Lancer le thread si on est sur Render
     if os.environ.get('RENDER'):
