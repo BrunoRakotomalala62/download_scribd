@@ -100,6 +100,9 @@ def download_api():
 @app.route('/recherche')
 def recherche():
     query = request.args.get('scribd')
+    page = request.args.get('page', default=1, type=int)
+    results_per_page = 25
+    
     if not query:
         return {"error": "Veuillez fournir un paramètre scribd"}, 400
     
@@ -116,29 +119,25 @@ def recherche():
     try:
         driver.get(search_url)
         
-        # Faire défiler vers le bas pour charger plus de résultats
-        for _ in range(3):
+        # Déterminer combien de défilement faire en fonction de la page demandée
+        # Pour 25 résultats par page, on a besoin de plus de contenu
+        scroll_count = 2 + (page * 2) 
+        for _ in range(scroll_count):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(1.5)
+            time.sleep(1)
             
         results = []
-        # On essaie des sélecteurs plus génériques
-        # Scribd change souvent ses classes, on cherche par structure
-        # Les cartes de documents sont souvent des div avec des attributs spécifiques
         items = driver.find_elements(By.CSS_SELECTOR, "div[data-resource_id], .document_card, .doc_card")
         
         if not items:
-            # Fallback sur les liens qui ressemblent à des documents
             items = driver.find_elements(By.CSS_SELECTOR, "a[href*='/document/']")
 
-        for item in items[:50]:
+        for item in items:
             try:
-                # Si l'item est déjà le lien
                 if item.tag_name == 'a':
                     link = item.get_attribute("href")
                     title = item.text or "Document sans titre"
                     try:
-                        # Recherche d'image plus agressive
                         img_elem = item.find_element(By.CSS_SELECTOR, "img, [class*='image'] img, [class*='thumbnail'] img")
                         image_url = img_elem.get_attribute("src") or img_elem.get_attribute("data-src")
                     except:
@@ -149,11 +148,9 @@ def recherche():
                     title = title_elem.text
                     link = link_elem.get_attribute("href")
                     try:
-                        # Recherche d'image plus agressive dans le parent ou l'enfant
                         img_elem = item.find_element(By.CSS_SELECTOR, "img, [class*='image'] img, [class*='thumbnail'] img, .doc_card_image img")
                         image_url = img_elem.get_attribute("src") or img_elem.get_attribute("data-src")
                     except:
-                        # Parfois l'image est à côté du titre dans le même conteneur parent
                         try:
                             parent = item.find_element(By.XPATH, "..")
                             img_elem = parent.find_element(By.CSS_SELECTOR, "img")
@@ -162,7 +159,6 @@ def recherche():
                             image_url = None
                 
                 if link and "/document/" in link:
-                    # Éviter les doublons
                     if not any(r['url'] == link for r in results):
                         results.append({
                             "titre": title.strip(),
@@ -171,8 +167,22 @@ def recherche():
                         })
             except:
                 continue
+        
+        # Pagination logique
+        total_results = len(results)
+        start_idx = (page - 1) * results_per_page
+        end_idx = start_idx + results_per_page
+        
+        paginated_results = results[start_idx:end_idx]
                 
-        return {"resultats": results, "count": len(results)}
+        return {
+            "query": query,
+            "page": page,
+            "results_per_page": results_per_page,
+            "total_found": total_results,
+            "count": len(paginated_results),
+            "resultats": paginated_results
+        }
     finally:
         driver.quit()
 
