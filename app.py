@@ -138,8 +138,9 @@ def recherche():
                     link = item.get_attribute("href")
                     title = item.text or "Document sans titre"
                     try:
-                        img_elem = item.find_element(By.CSS_SELECTOR, "img")
-                        image_url = img_elem.get_attribute("src")
+                        # Recherche d'image plus agressive
+                        img_elem = item.find_element(By.CSS_SELECTOR, "img, [class*='image'] img, [class*='thumbnail'] img")
+                        image_url = img_elem.get_attribute("src") or img_elem.get_attribute("data-src")
                     except:
                         image_url = None
                 else:
@@ -148,10 +149,17 @@ def recherche():
                     title = title_elem.text
                     link = link_elem.get_attribute("href")
                     try:
-                        img_elem = item.find_element(By.CSS_SELECTOR, "img, .thumbnail img")
-                        image_url = img_elem.get_attribute("src")
+                        # Recherche d'image plus agressive dans le parent ou l'enfant
+                        img_elem = item.find_element(By.CSS_SELECTOR, "img, [class*='image'] img, [class*='thumbnail'] img, .doc_card_image img")
+                        image_url = img_elem.get_attribute("src") or img_elem.get_attribute("data-src")
                     except:
-                        image_url = None
+                        # Parfois l'image est à côté du titre dans le même conteneur parent
+                        try:
+                            parent = item.find_element(By.XPATH, "..")
+                            img_elem = parent.find_element(By.CSS_SELECTOR, "img")
+                            image_url = img_elem.get_attribute("src") or img_elem.get_attribute("data-src")
+                        except:
+                            image_url = None
                 
                 if link and "/document/" in link:
                     # Éviter les doublons
