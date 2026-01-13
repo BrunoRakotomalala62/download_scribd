@@ -137,18 +137,29 @@ def recherche():
                 if item.tag_name == 'a':
                     link = item.get_attribute("href")
                     title = item.text or "Document sans titre"
+                    try:
+                        img_elem = item.find_element(By.CSS_SELECTOR, "img")
+                        image_url = img_elem.get_attribute("src")
+                    except:
+                        image_url = None
                 else:
                     title_elem = item.find_element(By.CSS_SELECTOR, ".title, .doc_title, hdiv, span")
                     link_elem = item.find_element(By.CSS_SELECTOR, "a[href*='/document/']")
                     title = title_elem.text
                     link = link_elem.get_attribute("href")
+                    try:
+                        img_elem = item.find_element(By.CSS_SELECTOR, "img, .thumbnail img")
+                        image_url = img_elem.get_attribute("src")
+                    except:
+                        image_url = None
                 
                 if link and "/document/" in link:
                     # Éviter les doublons
                     if not any(r['url'] == link for r in results):
                         results.append({
                             "titre": title.strip(),
-                            "url": link
+                            "url": link,
+                            "image": image_url
                         })
             except:
                 continue
