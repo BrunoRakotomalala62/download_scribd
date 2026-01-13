@@ -118,23 +118,38 @@ def recherche():
         time.sleep(3)
         
         results = []
-        # On cherche les éléments de résultats de recherche
-        # Scribd utilise souvent des classes comme 'DocumentCard' ou des sélecteurs similaires
-        items = driver.find_elements(By.CSS_SELECTOR, "li[data-resource_id]")
+        # On essaie des sélecteurs plus génériques
+        # Scribd change souvent ses classes, on cherche par structure
+        # Les cartes de documents sont souvent des div avec des attributs spécifiques
+        items = driver.find_elements(By.CSS_SELECTOR, "div[data-resource_id], .document_card, .doc_card")
         
-        for item in items[:10]: # Limiter aux 10 premiers résultats
+        if not items:
+            # Fallback sur les liens qui ressemblent à des documents
+            items = driver.find_elements(By.CSS_SELECTOR, "a[href*='/document/']")
+
+        for item in items[:15]:
             try:
-                title_elem = item.find_element(By.CSS_SELECTOR, ".title, .doc_title")
-                link_elem = item.find_element(By.CSS_SELECTOR, "a.item_link, a[href*='/document/']")
+                # Si l'item est déjà le lien
+                if item.tag_name == 'a':
+                    link = item.get_attribute("href")
+                    title = item.text or "Document sans titre"
+                else:
+                    title_elem = item.find_element(By.CSS_SELECTOR, ".title, .doc_title, hdiv, span")
+                    link_elem = item.find_element(By.CSS_SELECTOR, "a[href*='/document/']")
+                    title = title_elem.text
+                    link = link_elem.get_attribute("href")
                 
-                results.append({
-                    "titre": title_elem.text,
-                    "url": link_elem.get_attribute("href")
-                })
+                if link and "/document/" in link:
+                    # Éviter les doublons
+                    if not any(r['url'] == link for r in results):
+                        results.append({
+                            "titre": title.strip(),
+                            "url": link
+                        })
             except:
                 continue
                 
-        return {"resultats": results}
+        return {"resultats": results, "count": len(results)}
     finally:
         driver.quit()
 
