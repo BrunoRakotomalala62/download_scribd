@@ -97,6 +97,46 @@ def download_api():
 
     return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
 
+@app.route('/recherche')
+def recherche():
+    query = request.args.get('scribd')
+    if not query:
+        return {"error": "Veuillez fournir un paramètre scribd"}, 400
+    
+    # URL de recherche Scribd
+    search_url = f"https://www.scribd.com/search?query={requests.utils.quote(query)}&content_type=documents"
+    
+    options = Options()
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    driver = webdriver.Chrome(options=options)
+    try:
+        driver.get(search_url)
+        time.sleep(3)
+        
+        results = []
+        # On cherche les éléments de résultats de recherche
+        # Scribd utilise souvent des classes comme 'DocumentCard' ou des sélecteurs similaires
+        items = driver.find_elements(By.CSS_SELECTOR, "li[data-resource_id]")
+        
+        for item in items[:10]: # Limiter aux 10 premiers résultats
+            try:
+                title_elem = item.find_element(By.CSS_SELECTOR, ".title, .doc_title")
+                link_elem = item.find_element(By.CSS_SELECTOR, "a.item_link, a[href*='/document/']")
+                
+                results.append({
+                    "titre": title_elem.text,
+                    "url": link_elem.get_attribute("href")
+                })
+            except:
+                continue
+                
+        return {"resultats": results}
+    finally:
+        driver.quit()
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
